@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.xlsx
+n8n_workflow.json
+.env
+note.md
