@@ -162,9 +162,9 @@ def main():
     else:
         print(f"❌ 發送失敗: {result}")
 
-    # 有買進時，更新 Excel 並傳送到 Telegram
-    if data and data["buy"] > 0:
-        print("\n有買進紀錄，更新 Excel...")
+    # 有交易紀錄（買進或賣出）時，更新 Excel 並傳送到 Telegram
+    if data and (data["buy"] > 0 or data["sell"] > 0):
+        print("\n有交易紀錄，更新 Excel...")
         if update_excel():
             res = send_telegram_file(
                 EXCEL_PATH,
