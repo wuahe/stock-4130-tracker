@@ -8,6 +8,7 @@ import urllib3
 import re
 import pandas as pd
 from datetime import datetime
+from pathlib import Path
 
 urllib3.disable_warnings()
 
@@ -101,7 +102,7 @@ def main():
     # 存 Excel
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 
-    output = "/Users/wuahe/Claude/追蹤健亞股票/兆豐新莊_健亞4130_交易明細.xlsx"
+    output = str(Path(__file__).parent / "兆豐新莊_健亞4130_交易明細.xlsx")
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df.to_excel(writer, sheet_name="兆豐新莊-健亞4130", index=False)
         ws = writer.sheets["兆豐新莊-健亞4130"]
