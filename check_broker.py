@@ -15,7 +15,7 @@ from pathlib import Path
 urllib3.disable_warnings()
 
 # === 設定 ===
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8660780420:AAFNMvmtStreFDXn_iL0diSi_6vpFQcNohs")
+TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "-1003631115396")
 
 STOCK_ID = "4130"
