@@ -11,4 +11,5 @@ COPY check_broker.py .
 COPY fetch_history.py .
 COPY scheduler.py .
 
+ENV PYTHONUNBUFFERED=1
 CMD ["python3", "scheduler.py"]
