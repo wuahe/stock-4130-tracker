@@ -100,16 +100,21 @@ def send_telegram_file(file_path, caption=""):
 
 
 def update_excel():
-    """執行 fetch_history.py 更新 Excel"""
+    """執行 fetch_history.py 更新 Excel；回傳 (是否成功, 錯誤訊息)"""
     script = Path(__file__).parent / "fetch_history.py"
-    result = subprocess.run(
-        ["python3", str(script)],
-        capture_output=True, text=True, timeout=60,
-    )
+    try:
+        result = subprocess.run(
+            ["python3", str(script)],
+            capture_output=True, text=True, timeout=120,
+        )
+    except subprocess.TimeoutExpired:
+        return False, "fetch_history.py 執行超過 120 秒被中止"
     print(result.stdout)
     if result.returncode != 0:
-        print(f"Excel 更新失敗: {result.stderr}")
-    return result.returncode == 0
+        err = (result.stderr or "")[-500:]
+        print(f"Excel 更新失敗: {err}")
+        return False, err
+    return True, ""
 
 
 EXCEL_PATH = Path(__file__).parent / "兆豐新莊_健亞4130_交易明細.xlsx"
@@ -165,7 +170,12 @@ def main():
     # 有交易紀錄（買進或賣出）時，更新 Excel 並傳送到 Telegram
     if data and (data["buy"] > 0 or data["sell"] > 0):
         print("\n有交易紀錄，更新 Excel...")
-        if update_excel():
+        ok, err = update_excel()
+        if not ok:
+            send_telegram(f"⚠️ Excel 更新失敗\n<pre>{err}</pre>")
+        elif not EXCEL_PATH.exists():
+            send_telegram(f"⚠️ Excel 檔不存在於：{EXCEL_PATH}")
+        else:
             res = send_telegram_file(
                 EXCEL_PATH,
                 caption=f"📎 {BROKER_NAME} - {STOCK_NAME}({STOCK_ID}) 交易明細（2025/11 至 {data['date']}）",
@@ -174,6 +184,7 @@ def main():
                 print("✅ Excel 已傳送到 Telegram")
             else:
                 print(f"❌ Excel 傳送失敗: {res}")
+                send_telegram(f"⚠️ Excel 傳送失敗\n<pre>{str(res)[:400]}</pre>")
 
 
 if __name__ == "__main__":
