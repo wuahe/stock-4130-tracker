@@ -43,18 +43,7 @@ class Handler(BaseHTTPRequestHandler):
         header_key = self.headers.get("X-Auth-Key", "")
         return header_key == PASSWORD
 
-    def do_GET(self):
-        parsed = urlparse(self.path)
-        if parsed.path in ("/", "/health"):
-            self._json(200, {"status": "ok", "service": "broker-checker"})
-            return
-        self._json(404, {"error": "not found"})
-
-    def do_POST(self):
-        parsed = urlparse(self.path)
-        if parsed.path != "/run":
-            self._json(404, {"error": "not found"})
-            return
+    def _run(self, parsed):
         if not self._authorized(parsed):
             self._json(401, {"error": "unauthorized"})
             return
@@ -67,11 +56,28 @@ class Handler(BaseHTTPRequestHandler):
             traceback.print_exc()
             self._json(500, {"status": "error", "message": str(e)})
 
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        if parsed.path in ("/", "/health"):
+            self._json(200, {"status": "ok", "service": "broker-checker"})
+            return
+        if parsed.path == "/run":
+            self._run(parsed)
+            return
+        self._json(404, {"error": "not found"})
+
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        if parsed.path == "/run":
+            self._run(parsed)
+            return
+        self._json(404, {"error": "not found"})
+
 
 def main():
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"HTTP server listening on 0.0.0.0:{PORT}")
-    print(f"Endpoints: GET /  |  POST /run?key=...")
+    print(f"Endpoints: GET /  |  GET|POST /run?key=...")
     server.serve_forever()
 
 
