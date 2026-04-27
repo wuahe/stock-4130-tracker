@@ -122,12 +122,20 @@ EXCEL_PATH = Path(__file__).parent / "兆豐新莊_健亞4130_交易明細.xlsx"
 
 def main():
     data = fetch_latest_data()
+    today_str = datetime.now().strftime("%Y/%m/%d")
+    is_today = bool(data) and data["date"] == today_str
 
-    if data is None:
+    if data is None or not is_today:
+        last_info = (
+            f"\n（最後一次交易：{data['date']}，買 {data['buy']:,} / 賣 {data['sell']:,}）"
+            if data else ""
+        )
         msg = (
             f"📊 <b>{STOCK_NAME}({STOCK_ID}) 券商追蹤</b>\n"
+            f"📅 {today_str}\n"
             f"🏢 {BROKER_NAME}\n\n"
-            f"查無交易紀錄"
+            f"今天沒有交易紀錄"
+            f"{last_info}"
         )
     else:
         price = fetch_stock_price()
@@ -167,9 +175,9 @@ def main():
     else:
         print(f"❌ 發送失敗: {result}")
 
-    # 有交易紀錄（買進或賣出）時，更新 Excel 並傳送到 Telegram
-    if data and (data["buy"] > 0 or data["sell"] > 0):
-        print("\n有交易紀錄，更新 Excel...")
+    # 今天有交易紀錄（買進或賣出）時，更新 Excel 並傳送到 Telegram
+    if is_today and (data["buy"] > 0 or data["sell"] > 0):
+        print("\n今天有交易紀錄，更新 Excel...")
         ok, err = update_excel()
         if not ok:
             send_telegram(f"⚠️ Excel 更新失敗\n<pre>{err}</pre>")
